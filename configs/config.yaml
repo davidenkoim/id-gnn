@@ -1,0 +1,5 @@
+defaults:
+  - model: ggnn
+  - dataset: java-small
+
+show_in_wandb: False
