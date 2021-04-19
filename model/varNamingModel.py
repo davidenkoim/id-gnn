@@ -5,7 +5,6 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
 import torch
 from dpu_utils.codeutils import split_identifier_into_parts
 from ptgnn.baseneuralmodel import AbstractNeuralModel, ModuleWithMetrics
-from ptgnn.baseneuralmodel.abstractneuralmodel import TNeuralModule
 from ptgnn.neuralmodels.gnn.graphneuralnetwork import GraphNeuralNetwork, GraphNeuralNetworkModel
 from ptgnn.neuralmodels.gnn.structs import GnnOutput, GraphData, TensorizedGraphData
 from torch import nn
@@ -32,18 +31,13 @@ class TensorizedVarNamingSample(NamedTuple):
     target_idxs: List[int]
 
 
-class VarNamingGraphModel(ModuleWithMetrics, TNeuralModule):
+class VarNamingGraphModel(ModuleWithMetrics):
     def __init__(self, gnn: GraphNeuralNetwork, decoder: RNNDecoder):
         super().__init__()
         self._gnn = gnn
         self._decoder = decoder
         self._loss = nn.CrossEntropyLoss(reduction='none')
         self._ignore_idxs = (decoder.pad_idx, decoder.eos_idx)
-        self.__sum_acc = 0
-        self.__num_samples = 0
-        self.__tp = 0
-        self.__fp = 0
-        self.__fn = 0
 
     def _reset_module_metrics(self) -> None:
         self.__sum_acc = 0
@@ -55,7 +49,7 @@ class VarNamingGraphModel(ModuleWithMetrics, TNeuralModule):
     def _module_metrics(self) -> Dict[str, Any]:
         accuracy = self.__sum_acc / self.__num_samples if self.__num_samples != 0 else 0
         precision = self.__tp / (self.__tp + self.__fp) if (self.__tp + self.__fp) != 0 else 0
-        recall = self.__tp / (self.__tp + self.__fn) if (self.__tp + self.__np) != 0 else 0
+        recall = self.__tp / (self.__tp + self.__fn) if (self.__tp + self.__fn) != 0 else 0
         return {
             "accuracy": accuracy,
             "precision": precision,

@@ -69,13 +69,12 @@ def train(cfg):
 
     if cfg.show_in_wandb:
         wandb.watch(trainer.neural_module, log="all")
-
-    trainer.register_train_epoch_end_hook(
-        lambda model, nn, epoch, metrics: log_run("train", model, epoch, metrics)
-    )
-    trainer.register_validation_epoch_end_hook(
-        lambda model, nn, epoch, metrics: log_run("val", model, epoch, metrics)
-    )
+        trainer.register_train_epoch_end_hook(
+            lambda model, nn, epoch, metrics: log_run("train", model, epoch, metrics)
+        )
+        trainer.register_validation_epoch_end_hook(
+            lambda model, nn, epoch, metrics: log_run("val", model, epoch, metrics)
+        )
 
     trainer.train(
         training_data,
@@ -182,8 +181,7 @@ def create_var_naming_gnn_model(model_cfg):
             max_graph_edges=100000,
             introduce_backwards_edges=False,
             add_self_edges=False,
-            stop_extending_minibatch_after_num_nodes=100000,
-            edge_representation_model=StrElementRepresentationModel(embedding_size=model_cfg.edge_embedding_size)
+            stop_extending_minibatch_after_num_nodes=100000
         ),
         decoder_model=RNNDecoderModel(target_representation_model=StrRepresentationModel(
             embedding_size=hidden_state_size, token_splitting="subtoken"),

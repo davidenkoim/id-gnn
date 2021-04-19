@@ -1,5 +1,5 @@
 defaults:
-  - model: ggnn
-  - dataset: java-small
+  - model: test_model
+  - dataset: test-dataset
 
 show_in_wandb: False
