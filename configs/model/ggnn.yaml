@@ -1,6 +1,7 @@
 # @package _group_
 name_of_run: test_config
 filename: C:\Users\Igor\PycharmProjects\id-gnn\ggnn_model.pkl.gz
+use_checkpoint: True
 restore_path: C:\Users\Igor\PycharmProjects\id-gnn\ggnn_model.pkl.gz
 parallelize: True
 use_multiprocessing: False

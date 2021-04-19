@@ -44,7 +44,7 @@ def train(cfg):
 
     initialize_metadata = True
     restore_path = cfg.model.restore_path
-    if restore_path:
+    if restore_path and cfg.model.use_checkpoint:
         initialize_metadata = False
         model, nn = VarNamingModel.restore_model(Path(restore_path))
     else:
