@@ -108,6 +108,8 @@ class VarNamingModel(
 
     @classmethod
     def __add_subtoken_vocab_nodes(cls, graph: GraphData[str, str]) -> None:
+        if "NextToken" not in graph.edges:
+            return
         all_token_nodes = set(chain(*graph.edges["NextToken"]))
 
         subtoken_edges: List[Tuple[int, int]] = []

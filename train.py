@@ -68,7 +68,6 @@ def train(cfg):
         trainer.neural_module = nn
 
     if cfg.show_in_wandb:
-        wandb.watch(trainer.neural_module, log="all")
         trainer.register_train_epoch_end_hook(
             lambda model, nn, epoch, metrics: log_run("train", model, epoch, metrics)
         )
