@@ -177,8 +177,8 @@ def create_var_naming_gnn_model(model_cfg):
                 embedding_size=hidden_state_size, token_splitting="subtoken"
             ),
             message_passing_layer_creator=create_mp_layers,
-            max_nodes_per_graph=50000,
-            max_graph_edges=100000,
+            max_nodes_per_graph=model_cfg.max_nodes_per_graph,
+            max_graph_edges=model_cfg.max_graph_edges,
             introduce_backwards_edges=False,
             add_self_edges=False,
             stop_extending_minibatch_after_num_nodes=model_cfg.stop_extending_minibatch_after_num_nodes
