@@ -73,16 +73,17 @@ class VarNamingGraphModel(ModuleWithMetrics):
 
         token_idxs = target["token_idxs"]
         rnn_output: RNNOutput = self._decoder(token_idxs, var_reps.unsqueeze(0))
-        logits = rnn_output.logits.transpose(1, 2)
-        loss = self._loss(logits, token_idxs).sum(0).mean()
+        logits = rnn_output.logits[:-1]
+        idxs = token_idxs[1:]
+        loss = self._loss(logits.transpose(1, 2), idxs).sum(0).mean()
         with torch.no_grad():
-            self._update_metrics(rnn_output.logits, token_idxs)
+            self._update_metrics(logits, idxs)
         return loss
 
     def _update_metrics(self, logits: torch.Tensor, token_idxs: torch.Tensor) -> None:  # [L, B, V], [L, B]
         pred_token_idxs = logits.argmax(-1)  # [L, B, V] -> [L, B]
-        predictions = pred_token_idxs[:-1].transpose(0, 1)  # [L, B] -> [B, L - 1]
-        targets = token_idxs[1:].transpose(0, 1)  # [L, B] -> [B, L - 1]
+        predictions = pred_token_idxs.transpose(0, 1)  # [L, B] -> [B, L]
+        targets = token_idxs.transpose(0, 1)  # [L, B] -> [B, L]
         for prediction, target in zip(predictions, targets):
             self.__num_samples += 1
             self.__sum_acc += torch.eq(prediction, target).all().cpu().item()

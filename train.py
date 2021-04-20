@@ -78,6 +78,7 @@ def train(cfg):
     trainer.train(
         training_data,
         validation_data,
+        validate_on_start=False,
         show_progress_bar=True,
         initialize_metadata=initialize_metadata,
         parallelize=cfg.model.parallelize,
@@ -180,7 +181,7 @@ def create_var_naming_gnn_model(model_cfg):
             max_graph_edges=100000,
             introduce_backwards_edges=False,
             add_self_edges=False,
-            stop_extending_minibatch_after_num_nodes=100000
+            stop_extending_minibatch_after_num_nodes=model_cfg.stop_extending_minibatch_after_num_nodes
         ),
         decoder_model=RNNDecoderModel(target_representation_model=StrRepresentationModel(
             embedding_size=hidden_state_size, token_splitting="subtoken"),

@@ -1,5 +1,5 @@
 defaults:
-  - model: test_model
+  - model: ggnn
   - dataset: test-dataset
 
 show_in_wandb: False
