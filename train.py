@@ -78,7 +78,7 @@ def train(cfg):
     trainer.train(
         training_data,
         validation_data,
-        validate_on_start=False,
+        validate_on_start=True,
         show_progress_bar=True,
         initialize_metadata=initialize_metadata,
         parallelize=cfg.model.parallelize,
@@ -87,8 +87,8 @@ def train(cfg):
 
 
 def create_var_naming_gnn_model(model_cfg):
-    hidden_state_size = model_cfg.hidden_state_size
-    dropout = model_cfg.dropout
+    hidden_state_size = int(model_cfg.hidden_state_size)
+    dropout = float(model_cfg.dropout)
 
     def create_mlp_mp_layers(num_edges: int):
         def mlp_mp_constructor():
@@ -177,11 +177,11 @@ def create_var_naming_gnn_model(model_cfg):
                 embedding_size=hidden_state_size, token_splitting="subtoken"
             ),
             message_passing_layer_creator=create_mp_layers,
-            max_nodes_per_graph=model_cfg.max_nodes_per_graph,
-            max_graph_edges=model_cfg.max_graph_edges,
+            max_nodes_per_graph=int(model_cfg.max_nodes_per_graph),
+            max_graph_edges=int(model_cfg.max_graph_edges),
             introduce_backwards_edges=False,
             add_self_edges=False,
-            stop_extending_minibatch_after_num_nodes=model_cfg.stop_extending_minibatch_after_num_nodes
+            stop_extending_minibatch_after_num_nodes=int(model_cfg.stop_extending_minibatch_after_num_nodes)
         ),
         decoder_model=RNNDecoderModel(target_representation_model=StrRepresentationModel(
             embedding_size=hidden_state_size, token_splitting="subtoken"),

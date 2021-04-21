@@ -81,6 +81,8 @@ class VarNamingGraphModel(ModuleWithMetrics):
         return loss
 
     def _update_metrics(self, logits: torch.Tensor, token_idxs: torch.Tensor) -> None:  # [L, B, V], [L, B]
+        if logits.numel() == 0:
+            return
         pred_token_idxs = logits.argmax(-1)  # [L, B, V] -> [L, B]
         predictions = pred_token_idxs.transpose(0, 1)  # [L, B] -> [B, L]
         targets = token_idxs.transpose(0, 1)  # [L, B] -> [B, L]
