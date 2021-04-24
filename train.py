@@ -43,10 +43,9 @@ def train(cfg):
     assert model_path.name.endswith(".pkl.gz"), "model filename must have a `.pkl.gz` suffix."
 
     initialize_metadata = True
-    restore_path = cfg.model.restore_path
-    if restore_path and cfg.model.use_checkpoint:
+    if cfg.model.use_checkpoint and cfg.model.restore_path:
         initialize_metadata = False
-        model, nn = VarNamingModel.restore_model(Path(restore_path))
+        model, nn = VarNamingModel.restore_model(Path(cfg.model.restore_path))
     else:
         nn = None
         model = create_var_naming_gnn_model(cfg.model)
@@ -174,7 +173,8 @@ def create_var_naming_gnn_model(model_cfg):
     return VarNamingModel(
         gnn_model=GraphNeuralNetworkModel(
             node_representation_model=StrElementRepresentationModel(
-                embedding_size=hidden_state_size, token_splitting="subtoken"
+                embedding_size=hidden_state_size, token_splitting="subtoken",
+                vocabulary_size=int(model_cfg.gnn_vocabulary_size)
             ),
             message_passing_layer_creator=create_mp_layers,
             max_nodes_per_graph=int(model_cfg.max_nodes_per_graph),
@@ -184,7 +184,8 @@ def create_var_naming_gnn_model(model_cfg):
             stop_extending_minibatch_after_num_nodes=int(model_cfg.stop_extending_minibatch_after_num_nodes)
         ),
         decoder_model=RNNDecoderModel(target_representation_model=StrRepresentationModel(
-            embedding_size=hidden_state_size, token_splitting="subtoken"),
+            embedding_size=hidden_state_size, token_splitting="subtoken",
+            vocabulary_size=int(model_cfg.decoder_vocabulary_size)),
             create_rnn=lambda: nn.GRU(input_size=hidden_state_size, hidden_size=hidden_state_size, dropout=dropout)
         )
     )

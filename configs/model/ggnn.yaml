@@ -18,3 +18,5 @@ hidden_state_size: 64
 max_nodes_per_graph: 100000
 max_graph_edges: 500000,
 stop_extending_minibatch_after_num_nodes: 200000
+gnn_vocabulary_size: 30000
+decoder_vocabulary_size: 30000
