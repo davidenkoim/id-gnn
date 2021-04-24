@@ -78,7 +78,7 @@ def train(cfg):
     trainer.train(
         training_data,
         validation_data,
-        validate_on_start=True,
+        validate_on_start=cfg.model.validate_on_start,
         show_progress_bar=True,
         initialize_metadata=initialize_metadata,
         parallelize=cfg.model.parallelize,
