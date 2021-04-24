@@ -103,14 +103,14 @@ class StrRepresentationModel(
     # region Metadata Loading
     def initialize_metadata(self) -> None:
         self.__tok_counter = Counter[str]()
-        self.__tok_counter[INIT_TOKEN] = self.min_freq_threshold + 1
-        self.__tok_counter[EOS_TOKEN] = self.min_freq_threshold + 1
+        self.__tok_counter[INIT_TOKEN] = int(1e9)
+        self.__tok_counter[EOS_TOKEN] = int(1e9)
 
     def update_metadata_from(self, datapoint: str) -> None:
         if self.splitting_kind in {"token", "bpe"}:
             self.__tok_counter[datapoint] += 1
         elif self.splitting_kind == "subtoken":
-            self.__tok_counter.update(split_identifier_into_parts(datapoint))
+            self.__tok_counter.update([t.lower() for t in split_identifier_into_parts(datapoint)])
         else:
             raise ValueError(f'Unrecognized token splitting method "{self.splitting_kind}".')
 
@@ -162,7 +162,7 @@ class StrRepresentationModel(
             token_idxs = self.vocabulary.get_id_or_unk(datapoint)
             str_repr = datapoint
         elif self.splitting_kind == "subtoken":
-            subtoks = split_identifier_into_parts(datapoint)
+            subtoks = [t.lower() for t in split_identifier_into_parts(datapoint)]
             if len(subtoks) == 0:
                 subtoks = [Vocabulary.get_unk()]
             token_idxs = self.vocabulary.get_id_or_unk_multiple(subtoks)
@@ -207,6 +207,7 @@ class StrRepresentationModel(
             max_num_subtokens = max(len(t) for t in accumulated_minibatch_data["token_idxs"])
             if self.max_num_subtokens is not None:
                 max_num_subtokens = min(max_num_subtokens, self.max_num_subtokens)
+            max_num_subtokens += 2  # add bos, eos tokens
 
             subtoken_idxs = np.zeros(
                 (max_num_subtokens, len(accumulated_minibatch_data["token_idxs"])), dtype=np.int32
