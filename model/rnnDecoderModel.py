@@ -47,6 +47,10 @@ class RNNDecoderModel(AbstractNeuralModel[str, List[int], RNNDecoder]):
         self.__target_embedding_model = target_representation_model
         self.__create_rnn = create_rnn
 
+    @property
+    def vocabulary(self):
+        return self.__target_embedding_model.vocabulary
+
     def update_metadata_from(self, datapoint: str) -> None:
         self.__target_embedding_model.update_metadata_from(datapoint)
 

@@ -109,6 +109,10 @@ class VarNamingModel(
 
     IDENTIFIER_REGEX: Final = re.compile("[a-zA-Z][a-zA-Z0-9]*")
 
+    @property
+    def vocabulary(self):
+        return self.__decoder_model.vocabulary
+
     @classmethod
     def __add_subtoken_vocab_nodes(cls, graph: GraphData[str, str]) -> None:
         if "NextToken" not in graph.edges:
