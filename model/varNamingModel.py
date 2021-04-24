@@ -45,8 +45,11 @@ class VarNamingGraphModel(ModuleWithMetrics):
         self.__tp = 0
         self.__fp = 0
         self.__fn = 0
+        self.__sum_loss = 0
+        self.__num_batches = 0
 
     def _module_metrics(self) -> Dict[str, Any]:
+        loss_epoch = self.__sum_loss / self.__num_batches if self.__num_batches != 0 else 0
         accuracy = self.__sum_acc / self.__num_samples if self.__num_samples != 0 else 0
         precision = self.__tp / (self.__tp + self.__fp) if (self.__tp + self.__fp) != 0 else 0
         recall = self.__tp / (self.__tp + self.__fn) if (self.__tp + self.__fn) != 0 else 0
@@ -54,7 +57,8 @@ class VarNamingGraphModel(ModuleWithMetrics):
             "accuracy": accuracy,
             "precision": precision,
             "recall": recall,
-            "F1": 2 * precision * recall / (precision + recall) if (precision + recall) != 0 else 0
+            "F1": 2 * precision * recall / (precision + recall) if (precision + recall) != 0 else 0,
+            "loss_epoch": loss_epoch
         }
 
     def forward(self, graph_data, target):
@@ -77,10 +81,12 @@ class VarNamingGraphModel(ModuleWithMetrics):
         idxs = token_idxs[1:]
         loss = self._loss(logits.transpose(1, 2), idxs).sum(0).mean()
         with torch.no_grad():
-            self._update_metrics(logits, idxs)
+            self._update_metrics(logits, idxs, loss.detach().cpu().item())
         return loss
 
-    def _update_metrics(self, logits: torch.Tensor, token_idxs: torch.Tensor) -> None:  # [L, B, V], [L, B]
+    def _update_metrics(self, logits: torch.Tensor, token_idxs: torch.Tensor, loss) -> None:  # [L, B, V], [L, B]
+        self.__sum_loss += loss
+        self.__num_batches += 1
         if logits.numel() == 0:
             return
         pred_token_idxs = logits.argmax(-1)  # [L, B, V] -> [L, B]
