@@ -2,6 +2,7 @@ import gzip
 import json
 import os
 import random
+from math import exp
 from os.path import join
 
 import wandb
@@ -21,11 +22,20 @@ def load_from_folder(folder_path, shuffle):
         random.shuffle(all_files)
     for file in all_files:
         file_path = join(folder_path, file)
-        with gzip.open(file_path) as f:
-            samples = json.load(f)
+        samples = open_json_gz(file_path)
         if shuffle:
             random.shuffle(samples)
         yield from samples
+
+
+def open_json_gz(file_path):
+    with gzip.open(file_path) as f:
+        return json.load(f)
+
+
+def open_json(file_path):
+    with open(file_path) as f:
+        return json.load(f)
 
 
 def log_run(fold_name, model, epoch, metrics):
