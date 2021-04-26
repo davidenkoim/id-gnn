@@ -15,7 +15,7 @@ from omegaconf import OmegaConf
 from ptgnn.neuralmodels.gnn import GnnOutput
 
 from model.varNamingModel import VarNamingModel, VarNamingSample, VarNamingGraphModel
-from utils import INIT_TOKEN, BeamSearchNode
+from utils import BeamSearchNode
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
@@ -117,18 +117,17 @@ def evaluate():
         start = time.perf_counter()
         var_sample: VarNamingSample = request.get_json(force=True, cache=False)
         gt = var_sample["name"]
-        var_sample["name"] = INIT_TOKEN
-        var_sample["types"] = []
         tensorized_sample = model.tensorize(var_sample)
 
         minibatch = model.initialize_minibatch()
         model.extend_minibatch_with(tensorized_sample, minibatch)
         minibatch = model.finalize_minibatch(minibatch, device=DEVICE)
-        predictions = beam_search(nn, *minibatch)
+        minibatch["target"]["token_idxs"] = minibatch["target"]["token_idxs"][:1]
+        predictions = beam_search(nn, **minibatch)
         predictions = list(map(lambda prediction:
                                {
-                                   "name": [model.__decoder_model.__target_embedding_model.vocabulary.id_to_token(
-                                       token_idx) for token_idx in prediction[1].token_idxs.squeeze()][1: -1],
+                                   "name": [model.vocabulary.id_to_token[
+                                                token_idx] for token_idx in prediction[1].token_idxs.squeeze()][1: -1],
                                    "p": prediction[1].p
                                }, predictions))
         time_spent = time.perf_counter() - start
