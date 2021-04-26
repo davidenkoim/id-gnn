@@ -39,28 +39,6 @@ class VarNamingGraphModel(ModuleWithMetrics):
         self._loss = nn.CrossEntropyLoss(reduction='none')
         self._ignore_idxs = (decoder.pad_idx, decoder.eos_idx)
 
-    def _reset_module_metrics(self) -> None:
-        self.__sum_acc = 0
-        self.__num_samples = 0
-        self.__tp = 0
-        self.__fp = 0
-        self.__fn = 0
-        self.__sum_loss = 0
-        self.__num_batches = 0
-
-    def _module_metrics(self) -> Dict[str, Any]:
-        loss_epoch = self.__sum_loss / self.__num_batches if self.__num_batches != 0 else 0
-        accuracy = self.__sum_acc / self.__num_samples if self.__num_samples != 0 else 0
-        precision = self.__tp / (self.__tp + self.__fp) if (self.__tp + self.__fp) != 0 else 0
-        recall = self.__tp / (self.__tp + self.__fn) if (self.__tp + self.__fn) != 0 else 0
-        return {
-            "accuracy": accuracy,
-            "precision": precision,
-            "recall": recall,
-            "F1": 2 * precision * recall / (precision + recall) if (precision + recall) != 0 else 0,
-            "loss_epoch": loss_epoch
-        }
-
     def forward(self, graph_data, target):
         gnn_output: GnnOutput = self._gnn(**graph_data)
 
@@ -84,6 +62,15 @@ class VarNamingGraphModel(ModuleWithMetrics):
             self._update_metrics(logits, idxs, loss.detach().cpu().item())
         return loss
 
+    def _reset_module_metrics(self) -> None:
+        self.__sum_acc = 0
+        self.__num_samples = 0
+        self.__tp = 0
+        self.__fp = 0
+        self.__fn = 0
+        self.__sum_loss = 0
+        self.__num_batches = 0
+
     def _update_metrics(self, logits: torch.Tensor, token_idxs: torch.Tensor, loss) -> None:  # [L, B, V], [L, B]
         self.__sum_loss += loss
         self.__num_batches += 1
@@ -103,6 +90,19 @@ class VarNamingGraphModel(ModuleWithMetrics):
             for tgt_subtoken in filter(lambda x: x not in self._ignore_idxs, target):
                 if tgt_subtoken not in prediction:
                     self.__fn += 1
+
+    def _module_metrics(self) -> Dict[str, Any]:
+        loss_epoch = self.__sum_loss / self.__num_batches if self.__num_batches != 0 else 0
+        accuracy = self.__sum_acc / self.__num_samples if self.__num_samples != 0 else 0
+        precision = self.__tp / (self.__tp + self.__fp) if (self.__tp + self.__fp) != 0 else 0
+        recall = self.__tp / (self.__tp + self.__fn) if (self.__tp + self.__fn) != 0 else 0
+        return {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "F1": 2 * precision * recall / (precision + recall) if (precision + recall) != 0 else 0,
+            "loss_epoch": loss_epoch
+        }
 
 
 class VarNamingModel(
